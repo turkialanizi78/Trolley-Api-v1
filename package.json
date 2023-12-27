@@ -4,13 +4,12 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "build:digitalocean": "npm install --production=false && npm ci && npm run build",
+    "build:digitalocean": "npm install --production=false && npm run build && npm ci",
     "dev": "nodemon server.js",
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm run build"
+    "build": "babel . --ignore node_modules -d dist"
   },
-  
   "keywords": [],
   "author": "",
   "license": "ISC",
@@ -33,5 +32,9 @@
   "engines": {
     "node": "16.x",
     "npm": "^7.0.0"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.23.4",
+    "@babel/core": "^7.23.6"
   }
 }
