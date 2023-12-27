@@ -41,8 +41,13 @@ app.get("/", (req, res) => {
 });
 
 // Server listen
-const port = process.env.PORT || 3000;
-const url = process.env.HOST || "http://localhost";
+// const port = process.env.PORT || 3000;
+// const url = process.env.HOST || "http://localhost";
+// app.listen(port, () => {
+//   console.log(`Server up and running at: ${url}:${port}`);
+// });
+const port = process.env.PORT || 3000; // Use the PORT environment variable or default to port 3000
+
 app.listen(port, () => {
-  console.log(`Server up and running at: ${url}:${port}`);
+  console.log(`App listening on port ${port}`);
 });
