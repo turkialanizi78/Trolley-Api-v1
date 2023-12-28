@@ -13,7 +13,7 @@ const employeeSchema = new mongoose.Schema({
   },
   isAdmin: { type: Boolean, default: false }, // New field to indicate admin status
   //just test
-   isManager: { type: Boolean }, // New field to indicate Manager status
+  // isManager: { type: Boolean }, // New field to indicate Manager status
 });
 
 const Employee = mongoose.model('Employee', employeeSchema);

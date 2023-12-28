@@ -619,34 +619,42 @@ router.get('/getAdmin/:id', authenticateToken, isAdminMiddleware, async (req, re
 
 const jwtExpireTime = process.env.JWT_EXPIRE_TIME || '12h';
 // Route to authenticate and login an employee or admin
-router.post('/login',limiter, async (req, res) => {
-    try {
-      const { username, password } = req.body;
-  
-      // Find the user (employee or admin) by username
-      const user = await Employee.findOne({ username });
-  
-      if (!user) {
-        return res.status(401).json({ error: 'Invalid username or password' });
-      }
-  
-      // Check if the provided password matches the stored hash
-      const passwordMatch = await bcrypt.compare(password, user.password);
-  
-      if (!passwordMatch) {
-        return res.status(401).json({ error: 'Invalid username or password' });
-      }
-  
-      // Generate a JWT token for authentication
-      const token = jwt.sign({ userId: user._id, isAdmin: user.isAdmin , isManager: user.isManager }, process.env.JWT_SECRET, { expiresIn: jwtExpireTime });
-  
-      // Return the token and user data
-      res.json({ token, user });
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+// Route to authenticate and login an employee or admin
+router.post('/login', limiter, async (req, res) => {
+  try {
+    const { username, password, location } = req.body;
+
+    // Find the user (employee or admin) by username
+    const user = await Employee.findOne({ username });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid username or password' });
     }
-  });
-  
+
+    // Check if the provided password matches the stored hash
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Invalid username or password' });
+    }
+
+    // Manually add isManager to the token payload
+    const tokenPayload = {
+      userId: user._id,
+      isAdmin: user.isAdmin,
+      isManager: user.isManager,
+    };
+
+    // Generate a JWT token for authentication
+    const token = jwt.sign(tokenPayload, process.env.JWT_SECRET, { expiresIn: jwtExpireTime });
+
+    // Return the token and user data
+    res.json({ token, user, location });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
   // Route to logout (invalidate the token)
 router.post('/logout', authenticateToken, (req, res) => {
