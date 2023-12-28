@@ -15,7 +15,7 @@ const userLogger = require('../middleware/userLogger');
 
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // limit each IP to 100 requests per windowMs
+  max: 12, // limit each IP to 100 requests per windowMs
   message:
       "Too many requests from this IP, please try again after an 15 minute window",
 });
@@ -49,7 +49,7 @@ const authenticateToken = (req, res, next) => {
     }
 
     req.user = decodedToken; // Use decodedToken instead of user
-    console.log('Decoded User:', decodedToken);
+    //console.log('Decoded User:', decodedToken);
     next();
   });
 };
@@ -390,33 +390,44 @@ router.put('/updateTrolleyNumber/:trolleyNumber',authenticateToken, async (req, 
     }
   });
 
-
 // Route to add a new employee
-router.post('/addEmployee',authenticateToken, isAdminMiddleware, async (req, res) => {
-    try {
-      const { username, password, employeeData } = req.body;
-  
-      // Check if the username already exists
-      const existingEmployee = await Employee.findOne({ username });
-      if (existingEmployee) {
-        return res.status(400).json({ error: 'Username already exists' });
-      }
-  
-      // Hash the password before saving
-      const hashedPassword = await bcrypt.hash(password, 10);
-  
-      const newEmployee = new Employee({
-        username,
-        password: hashedPassword,
-        employeeData,
-      });
-  
-      const savedEmployee = await newEmployee.save();
-      res.json(savedEmployee);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
+router.post('/addEmployee', authenticateToken, isAdminMiddleware, async (req, res) => {
+  try {
+    const { username, password, employeeData } = req.body;
+
+    console.log(req.body); // Log the received dat
+    // Check if the username already exists
+    const existingEmployee = await Employee.findOne({ username });
+    if (existingEmployee) {
+      return res.status(400).json({ error: 'Username already exists' });
     }
-  });
+
+    // Hash the password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Extract isManager from the request body (assuming it's sent from the client)
+    const { isManager, ...restEmployeeData } = employeeData;
+
+    // Modify the employeeData object based on the isManager checkbox status
+    const modifiedEmployeeData = {
+      ...restEmployeeData,
+     
+    };
+
+    const newEmployee = new Employee({
+      username,
+      password: hashedPassword,
+       isManager: isManager || false, // Set to true if checkbox is checked, false otherwise
+      employeeData: modifiedEmployeeData,
+    });
+
+    const savedEmployee = await newEmployee.save();
+    res.json(savedEmployee);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 
 // Route to get all employees
 router.get('/getAllEmployees', authenticateToken, isAdminMiddleware, async (req, res) => {
@@ -451,8 +462,19 @@ router.put('/updateEmployee/:employeeId', authenticateToken, isAdminMiddleware, 
       updatedEmployeeData.password = await bcrypt.hash(updatedEmployeeData.password, 10);
     }
 
+    // Extract isManager from the request body
+    const { isManager, ...restUpdatedEmployeeData } = updatedEmployeeData;
+
+    // Modify the employeeData object based on the isManager checkbox status
+    const modifiedEmployeeData = {
+      ...restUpdatedEmployeeData,
+    };
+
+    // Update isManager separately
+    existingEmployee.isManager = isManager || false;
+
     // Update employee data
-    Object.assign(existingEmployee, updatedEmployeeData);
+    Object.assign(existingEmployee.employeeData, modifiedEmployeeData);
 
     // Save the updated employee
     const updatedEmployee = await existingEmployee.save();
@@ -619,7 +641,6 @@ router.get('/getAdmin/:id', authenticateToken, isAdminMiddleware, async (req, re
 
 const jwtExpireTime = process.env.JWT_EXPIRE_TIME || '12h';
 // Route to authenticate and login an employee or admin
-// Route to authenticate and login an employee or admin
 router.post('/login', limiter, async (req, res) => {
   try {
     const { username, password, location } = req.body;
@@ -650,11 +671,11 @@ router.post('/login', limiter, async (req, res) => {
 
     // Return the token and user data
     res.json({ token, user, location });
+   
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
-
 
   // Route to logout (invalidate the token)
 router.post('/logout', authenticateToken, (req, res) => {
