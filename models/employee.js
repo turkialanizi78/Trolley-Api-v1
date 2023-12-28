@@ -12,6 +12,7 @@ const employeeSchema = new mongoose.Schema({
     email: { type: String },
   },
   isAdmin: { type: Boolean, default: false }, // New field to indicate admin status
+  //just test
   // isManager: { type: Boolean, default: false }, // New field to indicate Manager status
 });
 
