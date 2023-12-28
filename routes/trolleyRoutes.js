@@ -60,13 +60,10 @@ const isAdminMiddleware = (req, res, next) => {
     const user = req.user;
     console.log('User:', user);
     // Check if the user is an admin
-    if (user && user.isAdmin) {
+    if (user && user.isAdmin || user && user.isManager) {
       // User is an admin, allow access to the route
       next();
-    } else if (user && user.isManager) {
-      // User is an admin, allow access to the route
-      next();
-    }else{
+    } else{
       // User is not an admin, return an error
       res.status(403).json({ error: 'Forbidden: Access denied for non-admin users' });
     }
@@ -641,7 +638,7 @@ router.post('/login',limiter, async (req, res) => {
       }
   
       // Generate a JWT token for authentication
-      const token = jwt.sign({ userId: user._id, isAdmin: user.isAdmin ,isManager : user.isManager }, process.env.JWT_SECRET, { expiresIn: jwtExpireTime });
+      const token = jwt.sign({ userId: user._id, isAdmin: user.isAdmin }, process.env.JWT_SECRET, { expiresIn: jwtExpireTime });
   
       // Return the token and user data
       res.json({ token, user });
