@@ -36,13 +36,7 @@ app.use(bodyParser.json());
 // Use routes
 app.use("/trolley", trolleyRoutes); // Adjust the base URL ("/trolley") as needed
 
-// Serve static files from the "client/build" directory
-app.use(express.static(path.join(__dirname, 'trolley-frontend', 'build')));
-
-// Handle React routing, return all requests to React app
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'trolley-frontend', 'build', 'index.html'));
-});
+ 
 
 const port = process.env.PORT || 3000; // Use the PORT environment variable or default to port 3000
 
