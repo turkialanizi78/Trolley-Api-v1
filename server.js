@@ -1,4 +1,5 @@
 const express = require("express");
+const path = require("path");  // Add this line
 const dotenv = require("dotenv");
 const morgan = require("morgan");
 const mongoose = require("mongoose");
