@@ -30,22 +30,20 @@ if (process.env.NODE_ENV === "development") {
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-// Apply the userLogger middleware to log user actions
-// app.use(userLogger);
+
 
 // Use routes
 app.use("/trolley", trolleyRoutes); // Adjust the base URL ("/trolley") as needed
 
-app.get("/", (req, res) => {
-  res.send("Hello from API");
+// Serve static files from the "build" directory
+app.use(express.static(path.join(__dirname, 'build')));
+
+// Handle React routing, return all requests to React app
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
-// Server listen
-// const port = process.env.PORT || 3000;
-// const url = process.env.HOST || "http://localhost";
-// app.listen(port, () => {
-//   console.log(`Server up and running at: ${url}:${port}`);
-// });
+
 const port = process.env.PORT || 3000; // Use the PORT environment variable or default to port 3000
 
 app.listen(port, () => {
